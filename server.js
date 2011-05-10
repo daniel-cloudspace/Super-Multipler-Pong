@@ -19,17 +19,18 @@ app.configure(function(){
 
 
 var socket = io.listen(app);
-var players = {};
+var pongers = {};
 
 socket.on('connection', function(client) {
   client.on('message', function(message){ 
     // Update the locations of all known people on the map
-    players[client.sessionId] = message;
+    console.log(message);
+    pongers[client.sessionId] = message;
 	//sys.puts(util.inspect(message));
   });
   client.on('disconnect', function(){ sys.puts("client disconnected"); });
 });
 
 setInterval(function() {
-        socket.broadcast(players);
+        socket.broadcast(pongers);
 }, 50);
