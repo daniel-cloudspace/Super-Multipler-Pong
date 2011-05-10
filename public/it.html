@@ -1,0 +1,107 @@
+
+<style type="text/css">
+    #map { width:99%; border: 5px solid black; height: 98%;}
+    #map #left_field { float:left; width:49%; height: 100%; }
+    #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
+</style>
+
+
+
+<body>
+    <div id="map">
+        <div id="left_field">
+        </div>
+        <div id="right_field">
+        </div>
+    </div>
+</body>
+
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="keys.js"></script>
+<script type="text/javascript">
+function $(id) {
+    return document.getElementById(id);
+}
+
+window.addEventListener('load', function()
+{
+
+    // Key stroke bindings
+    var keys = {};
+    document.addEventListener('keydown', function(e) {
+            keys[e.keyCode] = true;
+            ponger.changed = true;
+    }, false);
+    document.addEventListener('keyup', function(e) {
+            keys[e.keyCode] = false;
+            ponger.changed = true;
+    }, false);
+    document.addEventListener('keypress', function(e) {
+            e.preventDefault();
+    }, false);
+
+
+    function create_new_ponger(id) {
+        var pongerSpriteHTML = "<div id='ponger_" + id + "' style=\"position: absolute; width:10px; height:120px; background-color: #CCCCCC;\">&nbsp;</div>";
+        var starter_x = ( Math.random() > 0.5 ? 100 : 500 );
+        $('map').innerHTML += pongerSpriteHTML;
+        console.log($('ponger_'+id));
+        return { sprite: $('ponger_' + id), x: starter_x, y: 0, color: '#CCCCCC', changed: false };
+    }
+
+
+
+
+    var pongers = {};
+    var ponger = {x:80, y:80, changed: false};
+
+ 
+    var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
+    socket.connect();
+    socket.on('connect', function(){ console.log('connected'); })
+    socket.on('message', function(message) {
+        for (var i in message) {
+            // new player has entered the game
+            if (typeof pongers[i] == "undefined") {
+                pongers[i] = create_new_ponger(i);
+            }
+
+            // mark if changed
+            if (pongers[i].x != message[i].x || pongers[i].y != message[i].y) {
+                pongers[i].changed = true; 
+
+                // change data
+                pongers[i].x = message[i].x;
+                pongers[i].y = message[i].y;
+            }
+        }
+    });
+
+    var ponger_step = 10;
+    var half_window_width = window.innerWidth / 2;
+    setInterval(function() {
+        if (keys[DOM_VK.UP]) { ponger.y -= ponger_step; }
+        if (keys[DOM_VK.DOWN]) { ponger.y += ponger_step; }
+        if (keys[DOM_VK.RIGHT]) { ponger.x += ponger_step; }
+        if (keys[DOM_VK.LEFT]) { ponger.x -= ponger_step; }
+
+        socket.send(ponger);
+        
+        for (i in pongers) {
+            if (pongers[i].changed) {
+                pongers[i].changed = false;
+                pongers[i].sprite.style.marginLeft = pongers[i].x;
+                pongers[i].sprite.style.marginTop = pongers[i].y;
+            }
+        }
+    }, 50);
+
+    setInterval(function() {
+        for (i in pongers) {
+            pongers[i].sprite.style.backgroundColor = (pongers[i].x > half_window_width) ? '#DD3333' : '#33DD33';
+        }
+    }, 500);
+
+}, false);
+</script>
