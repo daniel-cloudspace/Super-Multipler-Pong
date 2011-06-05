@@ -22,6 +22,8 @@ var socket = io.listen(app);
 var pongers = {};
 
 socket.on('connection', function(client) {
+  client.send({ init_data: { your_id: client.sessionId } });
+
   client.on('message', function(message){ 
     // Update the locations of all known people on the map
     console.log(message);

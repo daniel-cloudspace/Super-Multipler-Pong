@@ -23,7 +23,7 @@
 function $(id) {
     return document.getElementById(id);
 }
-
+var sprites = {};
 window.addEventListener('load', function()
 {
 
@@ -31,11 +31,11 @@ window.addEventListener('load', function()
     var keys = {};
     document.addEventListener('keydown', function(e) {
             keys[e.keyCode] = true;
-            ponger.changed = true;
+            pongers[my_id].changed = true;
     }, false);
     document.addEventListener('keyup', function(e) {
             keys[e.keyCode] = false;
-            ponger.changed = true;
+            pongers[my_id].changed = true;
     }, false);
     document.addEventListener('keypress', function(e) {
             e.preventDefault();
@@ -46,34 +46,42 @@ window.addEventListener('load', function()
         var pongerSpriteHTML = "<div id='ponger_" + id + "' style=\"position: absolute; width:10px; height:120px; background-color: #CCCCCC;\">&nbsp;</div>";
         var starter_x = ( Math.random() > 0.5 ? 100 : 500 );
         $('map').innerHTML += pongerSpriteHTML;
-        console.log($('ponger_'+id));
-        return { sprite: $('ponger_' + id), x: starter_x, y: 0, color: '#CCCCCC', changed: false };
+        return { sprite: $('ponger_' + id), ponger: { x: starter_x, y: 0, color: '#CCCCCC', changed: false } };
     }
 
 
 
 
+    var my_id;
     var pongers = {};
-    var ponger = {x:80, y:80, changed: false};
+    //var sprites = {};
 
  
     var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
     socket.connect();
     socket.on('connect', function(){ console.log('connected'); })
     socket.on('message', function(message) {
-        for (var i in message) {
-            // new player has entered the game
-            if (typeof pongers[i] == "undefined") {
-                pongers[i] = create_new_ponger(i);
-            }
-
-            // mark if changed
-            if (pongers[i].x != message[i].x || pongers[i].y != message[i].y) {
-                pongers[i].changed = true; 
-
-                // change data
-                pongers[i].x = message[i].x;
-                pongers[i].y = message[i].y;
+        // there has to be a better way to send initialization data
+        if ( 'init_data' in message ) {
+            my_id = message.init_data.your_id;
+            console.log('init data - ' + message.init_data.your_id);
+        } else {
+            for (var i in message) {
+                // new player has entered the game
+                if (typeof pongers[i] == "undefined") {
+                    var new_ponger = create_new_ponger(i);
+                    pongers[i] = new_ponger.ponger;
+                    sprites[i] = new_ponger.sprite;
+                }
+    
+                // mark if changed
+                if (pongers[i].x != message[i].x || pongers[i].y != message[i].y) {
+                    pongers[i].changed = true; 
+    
+                    // change data
+                    pongers[i].x = message[i].x;
+                    pongers[i].y = message[i].y;
+                }   
             }
         }
     });
@@ -81,25 +89,32 @@ window.addEventListener('load', function()
     var ponger_step = 10;
     var half_window_width = window.innerWidth / 2;
     setInterval(function() {
-        if (keys[DOM_VK.UP]) { ponger.y -= ponger_step; }
-        if (keys[DOM_VK.DOWN]) { ponger.y += ponger_step; }
-        if (keys[DOM_VK.RIGHT]) { ponger.x += ponger_step; }
-        if (keys[DOM_VK.LEFT]) { ponger.x -= ponger_step; }
+        if (keys[DOM_VK.UP]) { pongers[my_id].y -= ponger_step; }
+        if (keys[DOM_VK.DOWN]) { pongers[my_id].y += ponger_step; }
+        if (keys[DOM_VK.RIGHT]) { pongers[my_id].x += ponger_step; }
+        if (keys[DOM_VK.LEFT]) { pongers[my_id].x -= ponger_step; }
+        
+//        if ( typeof pongers[my_id] != 'undefined' && typeof pongers[my_id].x != 'undefined') {
+//            console.log(pongers[my_id].x + "  " + pongers[my_id].y, sprites[my_id]);
+//        }
 
-        socket.send(ponger);
+        socket.send(pongers[my_id]);
         
         for (i in pongers) {
             if (pongers[i].changed) {
                 pongers[i].changed = false;
-                pongers[i].sprite.style.marginLeft = pongers[i].x;
-                pongers[i].sprite.style.marginTop = pongers[i].y;
+                //sprites[i].style.marginLeft = pongers[i].x;
+                //sprites[i].style.marginTop = pongers[i].y;
+                var sprite = $('ponger_'+i);
+                sprite.style.marginLeft = pongers[i].x;
+                sprite.style.marginTop = pongers[i].y;
             }
         }
     }, 50);
 
     setInterval(function() {
         for (i in pongers) {
-            pongers[i].sprite.style.backgroundColor = (pongers[i].x > half_window_width) ? '#DD3333' : '#33DD33';
+            sprites[i].style.backgroundColor = (pongers[i].x > half_window_width) ? '#DD3333' : '#33DD33';
         }
     }, 500);
 
