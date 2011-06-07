@@ -57,7 +57,7 @@ window.addEventListener('load', function()
     //var sprites = {};
 
  
-    var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
+    var socket = new io.Socket(null, {port: 80, rememberTransport: false});
     socket.connect();
     socket.on('connect', function(){ console.log('connected'); })
     socket.on('message', function(message) {
