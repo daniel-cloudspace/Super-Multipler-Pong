@@ -1,0 +1,256 @@
+<!-- Object Oriented version of the nodejs pong.  100% does not work.  Code theoritcally has potential but has no support for actually printing or identifying the sprites. -->
+
+<style type="text/css">
+    #map { width:99%; border: 5px solid black; height: 98%;}
+    #map #left_field { float:left; width:49%; height: 100%; }
+    #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
+</style>
+
+
+
+<body>
+    <div id="map">
+        <div id="left_field">
+        </div>
+        <div id="right_field">
+        </div>
+    </div>
+</body>
+
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="keys.js"></script>
+<script type="text/javascript">
+function $(id) {
+    return document.getElementById(id);
+}
+
+//board object
+function Board (current_player) {
+  this.other_players = []
+  this.current_player = current_player
+
+  //animate all the players
+  this.animate = function()  {
+    this.other_players.animate
+    this.current_player.animate
+  }
+
+  //set the other players based on updates from the server
+  //then animate
+  this.update = function()  {
+    for(i in players)  {
+      session_id = players[i].session_id;
+      if(this.includes_player(session_id))  {
+        this.other_players[session_id].set_info(players[i]);
+      } else  {
+        this.add_player(player[i])
+      }
+    }
+  }
+  this.update();
+
+  this.includes_player = function(session_id)  {
+    if(!typeof this.other_players[session_id])  {
+      return false;
+    }
+    return true
+  }
+
+  this.add_player_if_new = function(new_p)  {
+    if(!this.includes_player(new_p.session_id))  {
+      this.add_player(new_p)
+    }
+  }
+
+  this.add_player - function(p)  {
+    other_players.[p.session_id] = Player.new(p)
+  }
+}
+
+//player object
+function Player (player_obj) {
+  //size of player movements
+  this.step_size = 1
+  //determines whether to send updates to the server
+  //initialized to true to seed the server with the new data
+  this.updated = true
+
+  //default values, actual values set at end of class
+  this.session_id = 0
+  this.x = 0
+  this.y = 0
+  this.team = 0
+  this.key_up = false
+  this.key_down = false
+  this.key_right = false
+  this.key_left = false
+
+  //avoid passing functions to the server
+  this.to_json = function()  {
+    return {x: this.x, y: this.y, team: this.team, key_up: this.key_up, key_down: this.key_down, key_right: this.key_right, key_left: this.key_left}
+  }
+
+  this.animate = function()  {
+    //we should be animating here
+    if(this.key_up && !this.key_down)  {
+      this.set_info({x: this.x - this.step_size})
+    } else if(this.key_down && !this.key_up)  {
+      this.set_info({x: this.x + this.step_size})
+    }
+    if(this.key_left && !this.key_right)  {
+      this.set_info({y: this.y - this.step_size})
+    } else if(this.key_right && !this.key_left)  {
+      this.set_info({y: this.y += this.step_size})
+    }
+  }
+
+  this.send_update_to_server = function()  {
+    if(this.updated)  {
+      //send update to server  
+      socket.send(this.to_json)
+    }
+    this.updated = false
+  }
+
+  this.set_info = function(info)  {
+    this.session_id = info.session_id
+    if(info.x && this.x != info.x)  {
+      this.x = plaxer_obj.x
+      this.updated = true
+    }
+    if(info.y && this.y != info.y)  {
+      this.y = info.y
+      this.updated = true
+    }
+    if(info.team && this.team != info.team)  {
+      this.team = info.team
+      this.updated = true
+    }
+    if(info.key_up && this.up != info.up)  {
+      this.key_up = info.key_up
+      this.updated = true
+    }
+    if(info.key_down && this.down != info.down)  {
+      this.key_down = info.key_down
+      this.updated = true
+    }
+    if(info.key_right && this.right != info.right)  {
+      this.key_right = info.key_right
+      this.updated = true
+    }
+    if(info.key_left && this.left != info.left)  {
+      this.key_left = info.key_left
+      this.updated = true
+    end
+  }
+
+  //handle player movement
+  this.start_move_up = function()  {
+    this.set_info({key_up: true})
+  }
+
+  this.end_move_up = function()  {
+    this.set_info({key_up: false})
+  }
+
+  this.start_move_down = function()  {
+    this.set_info({key_down: true})
+  }
+
+  this.end_move_down = function()  {
+    this.set_info({key_down: false})
+  }
+
+  this.start_move_left = function()  {
+    this.set_info({key_left: true})
+  }
+
+  this.end_move_left = function()  {
+    this.set_info({key_left: false})
+  }
+
+  this.start_move_right = function()  {
+    this.set_info({key_right: true})
+  }
+
+  this.end_move_right = function()  {
+    this.set_info({key_right: false})
+  }
+
+  this.set_info(player_obj)
+  //update the server loop
+  setTimeout(this.send_update_to_server, 50);
+}
+
+
+var sprites = {};
+window.addEventListener('load', function()
+{
+    //player information from server
+    players = {}
+    //set a random location and setup the initial player
+    random_player_coords = get_random_player_coords_obj();
+    current_player = Player.new(random_player_coords);
+    //set up the board
+    board = Board.new(current_player)
+    //start animation, maybe move this to the class
+    setInterval(board.animate, 50)
+
+
+    // Key stroke bindings
+    var keys = {};
+    function process_key_strokes()  {
+      (keys[DOM_VK.UP] ? current_player.start_move_up : current_player.end_move_up)
+      (keys[DOM_VK.DOWN] ? current_player.start_move_down : current_player.end_move_down)
+      (keys[DOM_VK.RIGHT] ? current_player.start_move_right : current_player.end_move_right)
+      (keys[DOM_VK.LEFT] ? current_player.start_move_left : current_player.end_move_left)
+    }
+
+    document.addEventListener('keydown', function(e) {
+            keys[e.keyCode] = true;
+            pongers[my_id].changed = true;
+    }, false);
+    document.addEventListener('keyup', function(e) {
+            keys[e.keyCode] = false;
+            pongers[my_id].changed = true;
+    }, false);
+    document.addEventListener('keypress', function(e) {
+            e.preventDefault();
+    }, false);
+
+
+
+    function create_new_ponger(id) {
+        var pongerSpriteHTML = "<div id='ponger_" + id + "' style=\"position: absolute; width:10px; height:120px; background-color: #CCCCCC;\">&nbsp;</div>";
+        var starter_x = ( Math.random() > 0.5 ? 100 : 500 );
+        $('map').innerHTML += pongerSpriteHTML;
+        return { sprite: $('ponger_' + id), ponger: { x: starter_x, y: 0, color: '#CCCCCC', changed: false } };
+    }
+    var my_id;
+    var pongers = {};
+    //var sprites = {};
+
+ 
+    var socket = new io.Socket(null, {port: 80, rememberTransport: false});
+    socket.connect();
+    socket.on('connect', function(){ console.log('connected'); })
+    socket.on('message', function(message) {
+
+        // there has to be a better way to send initialization data
+        if ( 'init_data' in message ) {
+            my_id = message.init_data.your_id;
+            console.log('init data - ' + message.init_data.your_id);
+        } else {
+          board.update()
+        }
+    });
+
+    setInterval(function() {
+        for (i in pongers) {
+            sprites[i].style.backgroundColor = (pongers[i].x > half_window_width) ? '#DD3333' : '#33DD33';
+        }
+    }, 500);
+
+}, false);
+</script>
