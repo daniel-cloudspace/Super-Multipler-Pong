@@ -28,95 +28,106 @@ window.addEventListener('load', function()
 {
 
     // Key stroke bindings
-    var keys = {};
     document.addEventListener('keydown', function(e) {
-            keys[e.keyCode] = true;
-            pongers[my_id].changed = true;
+        players[my_id].keystrokes[e.keyCode] = true;
+        players[my_id].updated = true;
+        e.preventDefault();
+
     }, false);
     document.addEventListener('keyup', function(e) {
-            keys[e.keyCode] = false;
-            pongers[my_id].changed = true;
+        players[my_id].keystrokes[e.keyCode] = false;
+        players[my_id].updated = true;
+        e.preventDefault();
     }, false);
     document.addEventListener('keypress', function(e) {
-            e.preventDefault();
+        e.preventDefault();
     }, false);
 
 
     function create_new_ponger(id) {
-        var pongerSpriteHTML = "<div id='ponger_" + id + "' style=\"position: absolute; width:10px; height:120px; background-color: #CCCCCC;\">&nbsp;</div>";
+        var pongerSprite = document.createElement('div');
+        pongerSprite.id = 'ponger' + id;
+        pongerSprite.style.position = 'absolute';
+        pongerSprite.style.width = '10px';
+        pongerSprite.style.height = '120px';
+        pongerSprite.style.backgroundColor = "#CCCCCC";
+        
         var starter_x = ( Math.random() > 0.5 ? 100 : 500 );
-        $('map').innerHTML += pongerSpriteHTML;
-        return { sprite: $('ponger_' + id), ponger: { x: starter_x, y: 0, color: '#CCCCCC', changed: false } };
+        
+        $('map').appendChild(pongerSprite);
+
+        var keystrokes = {};
+        keystrokes[DOM_VK.UP] = keystrokes[DOM_VK.DOWN] = keystrokes[DOM_VK.RIGHT] = keystrokes[DOM_VK.LEFT] = false;
+        return { sprite: pongerSprite, player: { x: starter_x, y: 0, color: '#CCCCCC', updated: false, 'keystrokes': keystrokes} };
     }
 
 
 
 
     var my_id;
-    var pongers = {};
-    //var sprites = {};
+    var players = [];
+    var sprites = [];
+    
+    
+    var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
 
- 
-    var socket = new io.Socket(null, {port: 80, rememberTransport: false});
     socket.connect();
-    socket.on('connect', function(){ console.log('connected'); })
+
+    socket.on('connect', function(){ console.log(); });
+
     socket.on('message', function(message) {
         // there has to be a better way to send initialization data
         if ( 'init_data' in message ) {
             my_id = message.init_data.your_id;
-            console.log('init data - ' + message.init_data.your_id);
+            var me = create_new_ponger(my_id);
+            players[my_id] = me.player;
+            sprites[my_id] = me.sprite;
         } else {
             for (var i in message) {
                 // new player has entered the game
-                if (typeof pongers[i] == "undefined") {
+                if (typeof players[i] == "undefined") {
                     var new_ponger = create_new_ponger(i);
-                    pongers[i] = new_ponger.ponger;
+                    players[i] = new_ponger.player;
                     sprites[i] = new_ponger.sprite;
                 }
-    
-                // mark if changed
-                if (pongers[i].x != message[i].x || pongers[i].y != message[i].y) {
-                    pongers[i].changed = true; 
-    
-                    // change data
-                    pongers[i].x = message[i].x;
-                    pongers[i].y = message[i].y;
-                }   
-            }
+           }
         }
     });
 
-    var ponger_step = 10;
-    var half_window_width = window.innerWidth / 2;
-    setInterval(function() {
-        if (keys[DOM_VK.UP]) { pongers[my_id].y -= ponger_step; }
-        if (keys[DOM_VK.DOWN]) { pongers[my_id].y += ponger_step; }
-        if (keys[DOM_VK.RIGHT]) { pongers[my_id].x += ponger_step; }
-        if (keys[DOM_VK.LEFT]) { pongers[my_id].x -= ponger_step; }
-        
-//        if ( typeof pongers[my_id] != 'undefined' && typeof pongers[my_id].x != 'undefined') {
-//            console.log(pongers[my_id].x + "  " + pongers[my_id].y, sprites[my_id]);
-//        }
 
-        socket.send(pongers[my_id]);
-        
-        for (i in pongers) {
-            if (pongers[i].changed) {
-                pongers[i].changed = false;
-                //sprites[i].style.marginLeft = pongers[i].x;
-                //sprites[i].style.marginTop = pongers[i].y;
-                var sprite = $('ponger_'+i);
-                sprite.style.marginLeft = pongers[i].x;
-                sprite.style.marginTop = pongers[i].y;
-            }
+    // Animation Loop!!!
+    var ponger_step = 10;
+    setInterval(function() {
+        // animate all players according to their keystrokes
+        for (i in players) {
+            if (players[i].keystrokes[DOM_VK.UP])    { players[i].y -= ponger_step; }
+            if (players[i].keystrokes[DOM_VK.DOWN])  { players[i].y += ponger_step; }
+            if (players[i].keystrokes[DOM_VK.RIGHT]) { players[i].x += ponger_step; }
+            if (players[i].keystrokes[DOM_VK.LEFT])  { players[i].x -= ponger_step; }
+            
+            sprites[i].style.marginLeft = players[i].x;
+            sprites[i].style.marginTop = players[i].y;
+        }
+
+        // Update the server if there has been a change in the user.
+        if (players[my_id].updated) {
+            socket.send({
+                'my_id': my_id, 
+                'the_event': { 
+                    x: players[my_id].x,
+                    y: players[my_id].y,
+                    keystrokes: players[my_id].keystrokes
+                }
+            });
+            players[my_id].updated = false;
         }
     }, 50);
 
-    setInterval(function() {
-        for (i in pongers) {
-            sprites[i].style.backgroundColor = (pongers[i].x > half_window_width) ? '#DD3333' : '#33DD33';
+/*    setInterval(function() {
+        for (i in players) {
+            sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';
         }
     }, 500);
-
+*/
 }, false);
 </script>
