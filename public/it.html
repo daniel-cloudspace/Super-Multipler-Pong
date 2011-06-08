@@ -1,8 +1,10 @@
 
 <style type="text/css">
-    #map { width:99%; border: 5px solid black; height: 98%;}
+    #map { width:1000px; border: 5px solid black; height: 700px; }
     #map #left_field { float:left; width:49%; height: 100%; }
     #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
+    .green_ponger { background-image: url('/images/greenpaddle.png'); }
+    .red_ponger { background-image: url('/images/redpaddle.png'); }
 </style>
 
 
@@ -30,12 +32,30 @@ window.addEventListener('load', function()
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
         players[my_id].keystrokes[e.keyCode] = true;
+            socket.send({
+                'my_id': my_id, 
+                'the_event': { 
+                    x: players[my_id].x,
+                    y: players[my_id].y,
+                    keystrokes: players[my_id].keystrokes
+                }
+            });
+            players[my_id].updated = false;
         players[my_id].updated = true;
         e.preventDefault();
 
     }, false);
     document.addEventListener('keyup', function(e) {
         players[my_id].keystrokes[e.keyCode] = false;
+            socket.send({
+                'my_id': my_id, 
+                'the_event': { 
+                    x: players[my_id].x,
+                    y: players[my_id].y,
+                    keystrokes: players[my_id].keystrokes
+                }
+            });
+            players[my_id].updated = false;
         players[my_id].updated = true;
         e.preventDefault();
     }, false);
@@ -47,10 +67,10 @@ window.addEventListener('load', function()
     function create_new_ponger(id) {
         var pongerSprite = document.createElement('div');
         pongerSprite.id = 'ponger' + id;
+        pongerSprite.className = ( Math.random() > 0.5 ? 'red_ponger' : 'green_ponger' );
         pongerSprite.style.position = 'absolute';
         pongerSprite.style.width = '10px';
         pongerSprite.style.height = '120px';
-        pongerSprite.style.backgroundColor = "#CCCCCC";
         
         var starter_x = ( Math.random() > 0.5 ? 100 : 500 );
         
@@ -65,8 +85,9 @@ window.addEventListener('load', function()
 
 
     var my_id;
-    var players = [];
-    var sprites = [];
+    var players = {};
+    var sprites = {};
+    var buffer = {};
     
     
     var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
@@ -93,7 +114,10 @@ window.addEventListener('load', function()
                     if (i != my_id) {
                         players[i].x = message[i].x;
                         players[i].y = message[i].y;
-                        players[i].keystrokes = message.the_event.keystrokes;
+                        players[i].keystrokes[DOM_VK.UP] = message.the_event.keystrokes[DOM_VK.UP];
+                        players[i].keystrokes[DOM_VK.DOWN] = message.the_event.keystrokes[DOM_VK.DOWN];
+                        players[i].keystrokes[DOM_VK.LEFT] = message.the_event.keystrokes[DOM_VK.LEFT];
+                        players[i].keystrokes[DOM_VK.RIGHT] = message.the_event.keystrokes[DOM_VK.RIGHT];
                     }
                 }
            }
@@ -116,7 +140,7 @@ window.addEventListener('load', function()
         }
 
         // Update the server if there has been a change in the user.
-        if (players[my_id].updated) {
+/*        if (players[my_id].updated) {
             socket.send({
                 'my_id': my_id, 
                 'the_event': { 
@@ -127,8 +151,8 @@ window.addEventListener('load', function()
             });
             players[my_id].updated = false;
         }
+*/
     }, 50);
-
 /*    setInterval(function() {
         for (i in players) {
             sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';
