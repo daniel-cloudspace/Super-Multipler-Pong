@@ -32,33 +32,29 @@ window.addEventListener('load', function()
 
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
-        players[my_id].keystrokes[e.keyCode] = true;
-            socket.send({
-                'my_id': my_id, 
-                'the_event': { 
-                    x: players[my_id].x,
-                    y: players[my_id].y,
-                    keystrokes: players[my_id].keystrokes
-                }
-            });
-            players[my_id].updated = false;
-        players[my_id].updated = true;
         e.preventDefault();
+        players[my_id].keystrokes[e.keyCode] = true;
+        socket.send({
+            'my_id': my_id, 
+            'the_event': { 
+                x: players[my_id].x,
+                y: players[my_id].y,
+                keystrokes: players[my_id].keystrokes
+            }
+        });
 
     }, false);
     document.addEventListener('keyup', function(e) {
-        players[my_id].keystrokes[e.keyCode] = false;
-            socket.send({
-                'my_id': my_id, 
-                'the_event': { 
-                    x: players[my_id].x,
-                    y: players[my_id].y,
-                    keystrokes: players[my_id].keystrokes
-                }
-            });
-            players[my_id].updated = false;
-        players[my_id].updated = true;
         e.preventDefault();
+        players[my_id].keystrokes[e.keyCode] = false;
+        socket.send({
+            'my_id': my_id, 
+            'the_event': { 
+                x: players[my_id].x,
+                y: players[my_id].y,
+                keystrokes: players[my_id].keystrokes
+            }
+        });
     }, false);
     document.addEventListener('keypress', function(e) {
         e.preventDefault();
@@ -120,23 +116,23 @@ window.addEventListener('load', function()
             ball = message.init_data.ball;
             ballSprite = create_ball();
         } else {
-            for (var i in message) {
+            var events = message.events;
+            for (var i in events) {
                 // new player has entered the game
                 if (typeof players[i] == "undefined") {
                     var new_ponger = create_new_ponger(i);
                     players[i] = new_ponger.player;
                     sprites[i] = new_ponger.sprite;
-                } else {
-                    if (i != my_id) {
-                        players[i].x = message[i].x;
-                        players[i].y = message[i].y;
-                        players[i].keystrokes[DOM_VK.UP] = message.the_event.keystrokes[DOM_VK.UP];
-                        players[i].keystrokes[DOM_VK.DOWN] = message.the_event.keystrokes[DOM_VK.DOWN];
-                        players[i].keystrokes[DOM_VK.LEFT] = message.the_event.keystrokes[DOM_VK.LEFT];
-                        players[i].keystrokes[DOM_VK.RIGHT] = message.the_event.keystrokes[DOM_VK.RIGHT];
-                    }
+                } 
+                if (i != my_id) {
+                    players[i].x = events[i].x;
+                    players[i].y = events[i].y;
+                    players[i].keystrokes[DOM_VK.UP] = events[i].keystrokes[DOM_VK.UP];
+                    players[i].keystrokes[DOM_VK.DOWN] = events[i].keystrokes[DOM_VK.DOWN];
+                    players[i].keystrokes[DOM_VK.LEFT] = events[i].keystrokes[DOM_VK.LEFT];
+                    players[i].keystrokes[DOM_VK.RIGHT] = events[i].keystrokes[DOM_VK.RIGHT];
                 }
-           }
+            }
         }
     });
 
@@ -152,10 +148,12 @@ window.addEventListener('load', function()
 
         // animate all players according to their keystrokes
         for (i in players) {
-            if (players[i].keystrokes[DOM_VK.UP])    { players[i].y -= ponger_step; }
-            if (players[i].keystrokes[DOM_VK.DOWN])  { players[i].y += ponger_step; }
-            if (players[i].keystrokes[DOM_VK.RIGHT]) { players[i].x += ponger_step; }
-            if (players[i].keystrokes[DOM_VK.LEFT])  { players[i].x -= ponger_step; }
+            if (typeof players[i].keystrokes != 'undefined') {
+                if (players[i].keystrokes[DOM_VK.UP])    { players[i].y -= ponger_step; }
+                if (players[i].keystrokes[DOM_VK.DOWN])  { players[i].y += ponger_step; }
+                if (players[i].keystrokes[DOM_VK.RIGHT]) { players[i].x += ponger_step; }
+                if (players[i].keystrokes[DOM_VK.LEFT])  { players[i].x -= ponger_step; }
+            }
             
             sprites[i].style.marginLeft = players[i].x;
             sprites[i].style.marginTop = players[i].y;

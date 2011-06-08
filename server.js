@@ -33,14 +33,18 @@ socket.on('connection', function(client) {
 
   client.on('disconnect', function(){ sys.puts("client disconnected"); });
 });
-
+var count=0;
+var time = new Date().getTime();
 setInterval(function() {
     // this is basically: if event_buffer is not empty:
     for (i in event_buffer) {
-        event_buffer.time = new Date().getTime();
-        socket.broadcast(event_buffer);
-        console.log(event_buffer);
+        socket.broadcast({
+            time: new Date().getTime(), 
+            events: event_buffer
+        });
         event_buffer = {};
         break;
     }
+    count = count +1;
+    console.log(count + "   " + (new Date().getTime() - time)/50);
 }, 50);
