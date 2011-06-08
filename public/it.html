@@ -160,9 +160,8 @@ window.addEventListener('load', function()
             sprites[i].style.marginLeft = players[i].x;
             sprites[i].style.marginTop = players[i].y;
 
-            if (players[i].x < 530 && players[i].x > 470) {
-                sprites[i].className = ( players[i].x < 500 ? 'red_ponger' : 'green_ponger' );
-            }
+            var intended_team = ( players[i].x < 500 ? 'red_ponger' : 'green_ponger' );
+            if (sprites[i].className != intended_team) sprites[i].className = intended_team;
 
             // check for collision with ball
             var diff = ball.x - players[i].x;
