@@ -1,6 +1,6 @@
 
 <style type="text/css">
-    #map { width:1000px; border: 5px solid black; height: 700px; }
+    #map { width:1000px; border: 5px solid black; height: 500px; }
     #map #left_field { float:left; width:49%; height: 100%; }
     #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
     .green_ponger { background-image: url('/images/greenpaddle.png'); }
@@ -179,9 +179,9 @@ window.addEventListener('load', function()
         if (ball.y < 0) {
             ball.angle = 0 - ball.angle;
             ball.y = Math.abs(ball.y);
-        } else if (ball.y > 700) {
+        } else if (ball.y > 500) {
             ball.angle = 0 - ball.angle;
-            ball.y = 1400 - ball.y;
+            ball.y = 1000 - ball.y;
         }
         if (ball.x < 0) {
             ball.angle = Math.PI - ball.angle;
