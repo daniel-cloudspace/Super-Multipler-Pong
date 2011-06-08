@@ -5,6 +5,7 @@
     #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
     .green_ponger { background-image: url('/images/greenpaddle.png'); }
     .red_ponger { background-image: url('/images/redpaddle.png'); }
+    .ball { background-color: #CCCCCC; }
 </style>
 
 
@@ -81,14 +82,27 @@ window.addEventListener('load', function()
         return { sprite: pongerSprite, player: { x: starter_x, y: 0, color: '#CCCCCC', updated: false, keystrokes: keystrokes} };
     }
 
-
+    function create_ball() {
+        var ballSprite = document.createElement('div');
+        ballSprite.id = 'ball';
+        ballSprite.className = 'ball';
+        ballSprite.style.position = 'absolute';
+        ballSprite.style.width = '10px';
+        ballSprite.style.height = '10px';
+        ballSprite.style.marginLeft = ball.x;
+        ballSprite.style.marginTop = ball.y;
+        $('map').appendChild(ballSprite);
+        return ballSprite;
+    }
+        
 
 
     var my_id;
     var players = {};
     var sprites = {};
     var buffer = {};
-    
+    var ball = {};
+    var ballSprite;
     
     var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
 
@@ -103,6 +117,8 @@ window.addEventListener('load', function()
             var me = create_new_ponger(my_id);
             players[my_id] = me.player;
             sprites[my_id] = me.sprite;
+            ball = message.init_data.ball;
+            ballSprite = create_ball();
         } else {
             for (var i in message) {
                 // new player has entered the game
@@ -128,6 +144,11 @@ window.addEventListener('load', function()
     // Animation Loop!!!
     var ponger_step = 10;
     setInterval(function() {
+        // start animating the ball, pending collision check
+        ball.x -= ball.speed * Math.cos(ball.angle);
+        ball.y -= ball.speed * Math.sin(ball.angle);
+        b = ball.y - Math.tan(ball.angle) * ball.x;
+
         // animate all players according to their keystrokes
         for (i in players) {
             if (players[i].keystrokes[DOM_VK.UP])    { players[i].y -= ponger_step; }
@@ -137,7 +158,33 @@ window.addEventListener('load', function()
             
             sprites[i].style.marginLeft = players[i].x;
             sprites[i].style.marginTop = players[i].y;
+
+            // check for collision with ball
+    //        if (ball.x - players[i].x < 10) {
+    //            ball.angle = Math.PI/2 - ball.angle;
+    //            ball.x -= 2 * ball.speed * Math.cos(ball.angle);
+    //            ball.y -= 2 * ball.speed * Math.sin(ball.angle);
+    //        }
         }
+
+        if (ball.y < 0) {
+            ball.angle = 0 - ball.angle;
+            ball.y = Math.abs(ball.y);
+        } else if (ball.y > 700) {
+            ball.angle = 0 - ball.angle;
+            ball.y = 1400 - ball.y;
+        }
+        if (ball.x < 0) {
+            ball.angle = Math.PI - ball.angle;
+            ball.x = Math.abs(ball.x);
+        } else if (ball.x > 1000) {
+            ball.angle = Math.PI - ball.angle;
+            ball.x = 2000 - ball.x;
+        }
+        
+        ballSprite.style.marginLeft = (ball.x-5) + 'px';
+        ballSprite.style.marginTop = (ball.y-5) + 'px';
+        
 
         // Update the server if there has been a change in the user.
 /*        if (players[my_id].updated) {
