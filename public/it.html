@@ -146,8 +146,8 @@ window.addEventListener('load', function()
     var half_window = 500;
     setInterval(function() {
         // start animating the ball, pending collision check
-        ball.x -= ball.speed * Math.cos(ball.angle);
-        ball.y -= ball.speed * Math.sin(ball.angle);
+        ball.x += ball.speed * Math.cos(ball.angle);
+        ball.y += ball.speed * Math.sin(ball.angle);
         b = ball.y - Math.tan(ball.angle) * ball.x;
 
         // animate all players according to their keystrokes
@@ -165,11 +165,14 @@ window.addEventListener('load', function()
             }
 
             // check for collision with ball
-    //        if (ball.x - players[i].x < 10) {
-    //            ball.angle = Math.PI/2 - ball.angle;
-    //            ball.x -= 2 * ball.speed * Math.cos(ball.angle);
-    //            ball.y -= 2 * ball.speed * Math.sin(ball.angle);
-    //        }
+            var diff = ball.x - players[i].x;
+            if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
+                ball.angle = Math.PI - ball.angle;
+                ball.x = players[i].x + diff;
+            } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
+                ball.angle = Math.PI - ball.angle;
+                ball.x = players[i].x - diff;
+            }
         }
 
         if (ball.y < 0) {

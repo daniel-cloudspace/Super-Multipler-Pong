@@ -22,9 +22,10 @@ var socket = io.listen(app);
 var players = {};
 var ball = { x:100, y:300, angle: 0.5, speed: 10 };
 var event_buffer = {};
+var time;
 
 socket.on('connection', function(client) {
-  client.send({ init_data: { your_id: client.sessionId, ball: ball } });
+  client.send({ init_data: { your_id: client.sessionId, ball: ball, server_time: new Date().getTime() } });
 
   client.on('message', function(message){
     event_buffer[message.my_id] = message.the_event;
@@ -36,6 +37,7 @@ socket.on('connection', function(client) {
 setInterval(function() {
     // this is basically: if event_buffer is not empty:
     for (i in event_buffer) {
+        event_buffer.time = new Date().getTime();
         socket.broadcast(event_buffer);
         console.log(event_buffer);
         event_buffer = {};
