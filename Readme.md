@@ -18,21 +18,21 @@ I have a public demo set up on an EC2 instance at http://174.129.178.244/it.html
 If you'd like to install this game on your local computer and test it:
 
 - install NodeJS
-wget http://nodejs.org/dist/node-v0.4.8.tar.gz -qO - | tar -zx
-cd node-v0.4.7
-./configure
-make
-sudo make install
+    wget http://nodejs.org/dist/node-v0.4.8.tar.gz -qO - | tar -zx
+    cd node-v0.4.7
+    ./configure
+    make
+    sudo make install
 - install NPM (the Node Package Manager)
-curl http://npmjs.org/install.sh | sudo sh
+    curl http://npmjs.org/install.sh | sudo sh
 - install the Express and Socket.IO packages with npm
-sudo npm install express
-sudo npm install socket.io
+    sudo npm install express
+    sudo npm install socket.io
 - clone this project
-git clone git://github.com/daniel-cloudspace/Super-Multipler-Pong.git
+    git clone git://github.com/daniel-cloudspace/Super-Multipler-Pong.git
 - run the server
-cd Super-Multipler-Pong && sudo node server.js
+    cd Super-Multipler-Pong && sudo node server.js
 - open a decent web browser and go to:
-http://localhost:8080/it.html
+    http://localhost:8080/it.html
 
 And that should work!
