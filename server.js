@@ -27,13 +27,17 @@ socket.on('connection', function(client) {
 
   client.on('message', function(message){
     event_buffer[message.my_id] = message.the_event;
-    console.log(util.inspect(message));
   });
 
   client.on('disconnect', function(){ sys.puts("client disconnected"); });
 });
 
 setInterval(function() {
-    socket.broadcast(event_buffer);
-    event_buffer = {};
+    // this is basically: if event_buffer is not empty:
+    for (i in event_buffer) {
+        socket.broadcast(event_buffer);
+        console.log(event_buffer);
+        event_buffer = {};
+        break;
+    }
 }, 50);

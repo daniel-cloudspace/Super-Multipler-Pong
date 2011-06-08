@@ -58,7 +58,7 @@ window.addEventListener('load', function()
 
         var keystrokes = {};
         keystrokes[DOM_VK.UP] = keystrokes[DOM_VK.DOWN] = keystrokes[DOM_VK.RIGHT] = keystrokes[DOM_VK.LEFT] = false;
-        return { sprite: pongerSprite, player: { x: starter_x, y: 0, color: '#CCCCCC', updated: false, 'keystrokes': keystrokes} };
+        return { sprite: pongerSprite, player: { x: starter_x, y: 0, color: '#CCCCCC', updated: false, keystrokes: keystrokes} };
     }
 
 
@@ -73,7 +73,7 @@ window.addEventListener('load', function()
 
     socket.connect();
 
-    socket.on('connect', function(){ console.log(); });
+    socket.on('connect', function(){ return true; });
 
     socket.on('message', function(message) {
         // there has to be a better way to send initialization data
@@ -89,6 +89,12 @@ window.addEventListener('load', function()
                     var new_ponger = create_new_ponger(i);
                     players[i] = new_ponger.player;
                     sprites[i] = new_ponger.sprite;
+                } else {
+                    if (i != my_id) {
+                        players[i].x = message[i].x;
+                        players[i].y = message[i].y;
+                        players[i].keystrokes = message.the_event.keystrokes;
+                    }
                 }
            }
         }
