@@ -78,7 +78,7 @@ function game_tick() {
 socket.on('connection', function(client) {
   players[client.sessionId] = new_player(); 
 
-  client.send({ init_data: { your_id: client.sessionId, your_player: players[client.sessionId], ball: ball, server_time: new Date().getTime() } });
+  client.send({ init_data: { your_id: client.sessionId, your_player: players[client.sessionId], ball: ball, server_time: new Date().getTime(), players: players } });
 
   client.on('message', function(message){
     event_buffer[message.my_id] = message.the_event;
