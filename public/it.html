@@ -68,12 +68,12 @@ window.addEventListener('load', function()
     function create_new_ponger(id) {
         var pongerSprite = document.createElement('div');
         pongerSprite.id = 'ponger' + id;
-        pongerSprite.className = ( Math.random() > 0.5 ? 'red_ponger' : 'green_ponger' );
         pongerSprite.style.position = 'absolute';
         pongerSprite.style.width = '10px';
         pongerSprite.style.height = '120px';
         
-        var starter_x = ( Math.random() > 0.5 ? 100 : 500 );
+        var starter_x = ( Math.random() > 0.5 ? 100 : 900 );
+        pongerSprite.className = ( starter_x < 500 ? 'red_ponger' : 'green_ponger' );
         
         $('map').appendChild(pongerSprite);
 
@@ -143,6 +143,7 @@ window.addEventListener('load', function()
 
     // Animation Loop!!!
     var ponger_step = 10;
+    var half_window = 500;
     setInterval(function() {
         // start animating the ball, pending collision check
         ball.x -= ball.speed * Math.cos(ball.angle);
@@ -158,6 +159,10 @@ window.addEventListener('load', function()
             
             sprites[i].style.marginLeft = players[i].x;
             sprites[i].style.marginTop = players[i].y;
+
+            if (players[i].x < 530 && players[i].x > 470) {
+                sprites[i].className = ( players[i].x < 500 ? 'red_ponger' : 'green_ponger' );
+            }
 
             // check for collision with ball
     //        if (ball.x - players[i].x < 10) {
