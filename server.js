@@ -90,7 +90,10 @@ socket.on('connection', function(client) {
     players[message.my_id].keystrokes[DOM_VK.RIGHT] = message.the_event.keystrokes[DOM_VK.RIGHT];
   });
 
-  client.on('disconnect', function(){ sys.puts("client disconnected"); });
+  client.on('disconnect', function(){ 
+    sys.puts("client disconnected");
+    delete players[client.session_id];
+  });
 });
 
 var count=0;
