@@ -164,13 +164,15 @@ window.addEventListener('load', function()
             if (sprites[i].className != intended_team) sprites[i].className = intended_team;
 
             // check for collision with ball
-            var diff = ball.x - players[i].x;
-            if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
-                ball.angle = Math.PI - ball.angle;
-                ball.x = players[i].x + diff;
-            } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
-                ball.angle = Math.PI - ball.angle;
-                ball.x = players[i].x - diff;
+            if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
+                var diff = ball.x - players[i].x;
+                if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
+                    ball.angle = Math.PI - ball.angle;
+                    ball.x = players[i].x + diff;
+                } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
+                    ball.angle = Math.PI - ball.angle;
+                    ball.x = players[i].x - diff;
+                }
             }
         }
 
