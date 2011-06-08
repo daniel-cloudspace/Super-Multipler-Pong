@@ -61,21 +61,19 @@ window.addEventListener('load', function()
     }, false);
 
 
-    function create_new_ponger(id) {
+    function create_new_ponger(id, x, y) {
         var pongerSprite = document.createElement('div');
         pongerSprite.id = 'ponger' + id;
         pongerSprite.style.position = 'absolute';
         pongerSprite.style.width = '10px';
         pongerSprite.style.height = '120px';
-        
-        var starter_x = ( Math.random() > 0.5 ? 100 : 900 );
-        pongerSprite.className = ( starter_x < 500 ? 'red_ponger' : 'green_ponger' );
+        pongerSprite.className = ( x < 500 ? 'red_ponger' : 'green_ponger' );
         
         $('map').appendChild(pongerSprite);
 
         var keystrokes = {};
         keystrokes[DOM_VK.UP] = keystrokes[DOM_VK.DOWN] = keystrokes[DOM_VK.RIGHT] = keystrokes[DOM_VK.LEFT] = false;
-        return { sprite: pongerSprite, player: { x: starter_x, y: 0, color: '#CCCCCC', updated: false, keystrokes: keystrokes} };
+        return { sprite: pongerSprite, player: { x: x, y: 0, color: '#CCCCCC', updated: false, keystrokes: keystrokes} };
     }
 
     function create_ball() {
@@ -90,7 +88,6 @@ window.addEventListener('load', function()
         $('map').appendChild(ballSprite);
         return ballSprite;
     }
-        
 
 
     var my_id;
@@ -110,7 +107,7 @@ window.addEventListener('load', function()
         // there has to be a better way to send initialization data
         if ( 'init_data' in message ) {
             my_id = message.init_data.your_id;
-            var me = create_new_ponger(my_id);
+            var me = create_new_ponger(my_id, message.init_data.your_player.x, message.init_data.your_player.y);
             players[my_id] = me.player;
             sprites[my_id] = me.sprite;
             ball = message.init_data.ball;
@@ -132,6 +129,11 @@ window.addEventListener('load', function()
                     players[i].keystrokes[DOM_VK.LEFT] = events[i].keystrokes[DOM_VK.LEFT];
                     players[i].keystrokes[DOM_VK.RIGHT] = events[i].keystrokes[DOM_VK.RIGHT];
                 }
+            }
+            if (typeof message.ball != 'undefined') {
+                ball.x = message.ball.x;
+                ball.y = message.ball.y;
+                ball.angle = message.ball.angle;
             }
         }
     });
