@@ -24,6 +24,7 @@ var players = {};
 var ball = { x:100, y:300, angle: 0.5, speed: 10 };
 var event_buffer = {};
 var time;
+var green_team_score=0, red_team_score=0;
 
 function new_player() {
     var starter_x = ( Math.random() > 0.5 ? 100 : 900 );
@@ -69,16 +70,34 @@ function game_tick() {
     if (ball.x < 0) {
         ball.angle = Math.PI - ball.angle;
         ball.x = Math.abs(ball.x);
+        // Green team scores
+        green_team_score += 1;
+        socket.broadcast({ score: { green: green_team_score, red: red_team_score }});
     } else if (ball.x > 1000) {
         ball.angle = Math.PI - ball.angle;
         ball.x = 2000 - ball.x;
+        // Red team scores
+        red_team_score += 1;
+        socket.broadcast({ score: { green: green_team_score, red: red_team_score }});
     }
 }
 
 socket.on('connection', function(client) {
   players[client.sessionId] = new_player(); 
 
-  client.send({ init_data: { your_id: client.sessionId, your_player: players[client.sessionId], ball: ball, server_time: new Date().getTime(), players: players } });
+  client.send({ 
+    init_data: { 
+        your_id: client.sessionId, 
+        your_player: players[client.sessionId], 
+        ball: ball, 
+        server_time: new Date().getTime(), 
+        players: players, 
+        score: { 
+            green: green_team_score, 
+            red: red_team_score 
+        } 
+    } 
+  });
 
   client.on('message', function(message){
     event_buffer[message.my_id] = message.the_event;

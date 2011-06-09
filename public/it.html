@@ -1,8 +1,10 @@
 
 <style type="text/css">
+    #supercontainer { margin-left: auto; width:100%}
     #map { width:1000px; border: 5px solid black; height: 500px; }
     #map #left_field { float:left; width:49%; height: 100%; }
     #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
+    #scoreboard { position:relative; width: 200px; height: 100px; border: solid 1px #AAAAAA; background-color: #DDDDDD; }
     .green_ponger { background-image: url('/images/greenpaddle.png'); }
     .red_ponger { background-image: url('/images/redpaddle.png'); }
     .ball { background-color: #CCCCCC; }
@@ -11,11 +13,25 @@
 
 
 <body>
+    <div id='supcontainer'>
     <div id="map">
         <div id="left_field">
         </div>
         <div id="right_field">
         </div>
+    </div>
+    <div id="scoreboard">
+        <table>
+            <tr>
+                <th>Red Team</th>
+                <th>Green Team</th>
+            </tr>
+            <tr>
+                <td id="red_team_score">0</td>
+                <td id="green_team_score">0</td>
+            </tr>
+        </table>
+    </div>
     </div>
 </body>
 
@@ -118,6 +134,8 @@ window.addEventListener('load', function()
             sprites[my_id] = me.sprite;
             ball = message.init_data.ball;
             ballSprite = create_ball();
+            $('red_team_score').innerHTML = message.init_data.score.red;
+            $('green_team_score').innerHTML = message.init_data.score.green;
         } else {
             var events = message.events;
             for (var i in events) {
@@ -136,10 +154,14 @@ window.addEventListener('load', function()
                     players[i].keystrokes[DOM_VK.RIGHT] = events[i].keystrokes[DOM_VK.RIGHT];
                 }
             }
-            if (typeof message.ball != 'undefined') {
+            if ('ball' in message) {
                 ball.x = message.ball.x;
                 ball.y = message.ball.y;
                 ball.angle = message.ball.angle;
+            }
+            if ('score' in message) {
+                $('red_team_score').innerHTML = message.score.red;
+                $('green_team_score').innerHTML = message.score.green;
             }
         }
     });
