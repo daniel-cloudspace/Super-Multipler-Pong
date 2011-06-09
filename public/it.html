@@ -95,6 +95,8 @@ window.addEventListener('load', function()
 
     function destroy_ponger(id) {
         $('map').removeChild($('ponger'+id));
+        if (id in players) delete players[id];
+        if (id in sprites) delete sprites[id];
     }
 
     function create_ball() {
