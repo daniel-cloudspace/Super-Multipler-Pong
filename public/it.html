@@ -123,11 +123,9 @@ window.addEventListener('load', function()
 
     socket.on('connect', function(){ return true; });
 
+    socket.on('disconnect', function(){ setTimeout(function() { document.location = document.location; }, 2000); });
+
     socket.on('message', function(message) {
-        if ('refresh' in message) {
-            document.location = document.location; // refresh page
-            return;
-        }
         // there has to be a better way to send initialization data
         if ( 'init_data' in message ) {
             my_id = message.init_data.your_id;
