@@ -1,6 +1,8 @@
 # Super Multipler Pong
 This is a bad name. Give me a new one?
 
+I like it.
+
 ## Introduction
 
 After seeing (and gaming) the MMORPP project that was written in NodeJS, I wanted to play with this new funky language. Obviously, the first game you make in a new language is Pong. But how do you write Pong to take advantage of the beautiful anonymous-massive-multiplier capabilities of NodeJS and Socket.IO?
