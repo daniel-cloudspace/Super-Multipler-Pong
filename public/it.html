@@ -46,32 +46,36 @@ function $(id) {
 var sprites = {};
 window.addEventListener('load', function()
 {
+    var keystroke_matches = {37:true,38:true,39:true,40:true};
 
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
-        e.preventDefault();
-        players[my_id].keystrokes[e.keyCode] = true;
-        socket.send({
-            'my_id': my_id, 
-            'the_event': { 
-                x: players[my_id].x,
-                y: players[my_id].y,
-                keystrokes: players[my_id].keystrokes
-            }
-        });
-
+        if (e.keyCode in keystroke_matches) {
+            e.preventDefault();
+            players[my_id].keystrokes[e.keyCode] = true;
+            socket.send({
+                'my_id': my_id, 
+                'the_event': { 
+                    x: players[my_id].x,
+                    y: players[my_id].y,
+                    keystrokes: players[my_id].keystrokes
+                }
+            });
+        }
     }, false);
     document.addEventListener('keyup', function(e) {
-        e.preventDefault();
-        players[my_id].keystrokes[e.keyCode] = false;
-        socket.send({
-            'my_id': my_id, 
-            'the_event': { 
-                x: players[my_id].x,
-                y: players[my_id].y,
-                keystrokes: players[my_id].keystrokes
-            }
-        });
+        if (e.keyCode in keystroke_matches) {
+            e.preventDefault();
+            players[my_id].keystrokes[e.keyCode] = false;
+            socket.send({
+                'my_id': my_id, 
+                'the_event': { 
+                    x: players[my_id].x,
+                    y: players[my_id].y,
+                    keystrokes: players[my_id].keystrokes
+                }
+            });
+        }
     }, false);
     document.addEventListener('keypress', function(e) {
         e.preventDefault();
@@ -215,10 +219,10 @@ window.addEventListener('load', function()
             // check for collision with ball
             if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
                 var diff = ball.x - players[i].x;
-                if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
+                if (players[i].x < 500 && diff > 0 && diff < 10) {
                     ball.angle = Math.PI - ball.angle;
                     ball.x = players[i].x + diff;
-                } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
+                } else if (players[i].x > 500  && diff > -10 && diff < 10) {
                     ball.angle = Math.PI - ball.angle;
                     ball.x = players[i].x - diff;
                 }
@@ -257,7 +261,7 @@ window.addEventListener('load', function()
             players[my_id].updated = false;
         }
 */
-    }, 15);
+    }, 20);
 /*    setInterval(function() {
         for (i in players) {
             sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';
