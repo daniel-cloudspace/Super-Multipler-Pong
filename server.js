@@ -21,7 +21,7 @@ app.configure(function(){
 
 var socket = io.listen(app);
 var players = {};
-var ball = { x:100, y:300, angle: 0.5, speed: 7 };
+var ball = { x:100, y:300, angle: 0.5, speed: 10 };
 var event_buffer = {};
 var time;
 var green_team_score=0, red_team_score=0;
