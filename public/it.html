@@ -124,6 +124,10 @@ window.addEventListener('load', function()
     socket.on('connect', function(){ return true; });
 
     socket.on('message', function(message) {
+        if ('refresh' in message) {
+            document.location = document.location; // refresh page
+            return;
+        }
         // there has to be a better way to send initialization data
         if ( 'init_data' in message ) {
             my_id = message.init_data.your_id;
@@ -133,8 +137,6 @@ window.addEventListener('load', function()
                 players[i] = new_ponger.player;
                 sprites[i] = new_ponger.sprite;
             }
-            players[my_id] = me.player;
-            sprites[my_id] = me.sprite;
             ball = message.init_data.ball;
             ballSprite = create_ball();
             $('red_team_score').innerHTML = message.init_data.score.red;

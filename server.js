@@ -101,13 +101,18 @@ socket.on('connection', function(client) {
   });
 
   client.on('message', function(message){
-    event_buffer[message.my_id] = message.the_event;
-    players[message.my_id].x = message.the_event.x;
-    players[message.my_id].y = message.the_event.y;
-    players[message.my_id].keystrokes[DOM_VK.UP] = message.the_event.keystrokes[DOM_VK.UP];
-    players[message.my_id].keystrokes[DOM_VK.DOWN] = message.the_event.keystrokes[DOM_VK.DOWN];
-    players[message.my_id].keystrokes[DOM_VK.LEFT] = message.the_event.keystrokes[DOM_VK.LEFT];
-    players[message.my_id].keystrokes[DOM_VK.RIGHT] = message.the_event.keystrokes[DOM_VK.RIGHT];
+    // if the client is trying to send us data for someone that is not their sessionId, they are probably from a server restart. they need to refresh. 
+    if (message.my_id != client.sessionId) {
+        client.send({ refresh: true });
+    } else {
+        event_buffer[message.my_id] = message.the_event;
+        players[message.my_id].x = message.the_event.x;
+        players[message.my_id].y = message.the_event.y;
+        players[message.my_id].keystrokes[DOM_VK.UP] = message.the_event.keystrokes[DOM_VK.UP];
+        players[message.my_id].keystrokes[DOM_VK.DOWN] = message.the_event.keystrokes[DOM_VK.DOWN];
+        players[message.my_id].keystrokes[DOM_VK.LEFT] = message.the_event.keystrokes[DOM_VK.LEFT];
+        players[message.my_id].keystrokes[DOM_VK.RIGHT] = message.the_event.keystrokes[DOM_VK.RIGHT];
+    }
   });
 
   client.on('disconnect', function(){ 
