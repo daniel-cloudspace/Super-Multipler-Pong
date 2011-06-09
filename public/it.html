@@ -92,6 +92,10 @@ window.addEventListener('load', function()
         return { sprite: pongerSprite, player: { x: x, y: y, color: '#CCCCCC', updated: false, keystrokes: keystrokes} };
     }
 
+    function destroy_ponger(id) {
+        $('map').removeChild($('ponger'+id));
+    }
+
     function create_ball() {
         var ballSprite = document.createElement('div');
         ballSprite.id = 'ball';
@@ -162,6 +166,9 @@ window.addEventListener('load', function()
             if ('score' in message) {
                 $('red_team_score').innerHTML = message.score.red;
                 $('green_team_score').innerHTML = message.score.green;
+            }
+            if ('player_disconnected' in message) {
+                destroy_ponger(message.player_disconnected);
             }
         }
     });

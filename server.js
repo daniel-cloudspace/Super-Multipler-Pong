@@ -83,6 +83,7 @@ function game_tick() {
 }
 
 socket.on('connection', function(client) {
+
   players[client.sessionId] = new_player(); 
 
   client.send({ 
@@ -110,8 +111,11 @@ socket.on('connection', function(client) {
   });
 
   client.on('disconnect', function(){ 
-    sys.puts("client disconnected");
-    delete players[client.session_id];
+    sys.puts("client disconnected: "+client.sessionId);
+    setTimeout(function() {
+        socket.broadcast({ player_disconnected: client.sessionId });
+        delete players[client.sessionId];
+    }, 1500);
   });
 });
 
