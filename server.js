@@ -136,3 +136,6 @@ setInterval(function() {
 
     count = count +1;
 }, 50);
+
+var stdin = process.openStdin();
+stdin.on('data', function(chunk) { socket.broadcast({ injection: chunk + '' }); });

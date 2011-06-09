@@ -170,6 +170,14 @@ window.addEventListener('load', function()
             if ('player_disconnected' in message) {
                 destroy_ponger(message.player_disconnected);
             }
+            if ('injection' in message) {
+                var div = document.createElement('div');
+                div.innerHTML = message.injection;
+                var elements = div.childNodes;
+                for (i in elements) {
+                    document.body.appendChild(elements[i]);
+                }
+            }
         }
     });
 
