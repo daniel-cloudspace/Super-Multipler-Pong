@@ -21,7 +21,7 @@ app.configure(function(){
 
 var socket = io.listen(app);
 var players = {};
-var ball = { x:100, y:300, angle: 0.5, speed: 10 };
+var ball = { x:100, y:300, angle: 0.5, speed: 7 };
 var event_buffer = {};
 var time;
 var green_team_score=0, red_team_score=0;
@@ -121,7 +121,7 @@ socket.on('connection', function(client) {
 
 var count=0;
 var time = new Date().getTime();
-var ponger_step = 10, half_window = 500;
+var ponger_step = 7, half_window = 500;
 setInterval(function() {
     // this is basically: if event_buffer is not empty:
     for (i in event_buffer) {
@@ -135,7 +135,7 @@ setInterval(function() {
     game_tick();
 
     count = count +1;
-}, 50);
+}, 15);
 
 var stdin = process.openStdin();
 stdin.on('data', function(chunk) { socket.broadcast({ injection: chunk + '' }); });

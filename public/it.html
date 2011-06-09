@@ -8,7 +8,7 @@
     #scoreboard { position:relative; width: 200px; height: 100px; border: solid 1px #AAAAAA; background-color: #DDDDDD; }
     .green_ponger { background-image: url('/images/greenpaddle.png'); }
     .red_ponger { background-image: url('/images/redpaddle.png'); }
-    .ball { background-color: #CCCCCC; }
+    .ball { background-color: #777777; }
 </style>
 
 
@@ -189,7 +189,7 @@ window.addEventListener('load', function()
 
 
     // Animation Loop!!!
-    var ponger_step = 10;
+    var ponger_step = 7;
     var half_window = 500;
     setInterval(function() {
         // start animating the ball, pending collision check
@@ -257,7 +257,7 @@ window.addEventListener('load', function()
             players[my_id].updated = false;
         }
 */
-    }, 50);
+    }, 15);
 /*    setInterval(function() {
         for (i in players) {
             sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';
