@@ -127,7 +127,7 @@ window.addEventListener('load', function()
         // there has to be a better way to send initialization data
         if ( 'init_data' in message ) {
             my_id = message.init_data.your_id;
-            var me = create_new_ponger(my_id, message.init_data.your_player.x, message.init_data.your_player.y);
+//            var me = create_new_ponger(my_id, message.init_data.your_player.x, message.init_data.your_player.y);
             var init_players = message.init_data.players;
             for (i in init_players) {
                 var new_ponger = create_new_ponger(i, init_players[i].x, init_players[i].y);
