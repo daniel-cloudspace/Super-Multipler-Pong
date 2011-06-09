@@ -102,7 +102,7 @@ socket.on('connection', function(client) {
 
   client.on('message', function(message){
     // if the client is trying to send us data for someone that is not their sessionId, they are probably from a server restart. they need to refresh. 
-    if (message.my_id != client.sessionId) {
+    if (! message.my_id in players) {
         client.send({ refresh: true });
     } else {
         event_buffer[message.my_id] = message.the_event;
