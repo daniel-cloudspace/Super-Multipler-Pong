@@ -117,10 +117,8 @@ socket.on('connection', function(client) {
 
   client.on('disconnect', function(){ 
     sys.puts("client disconnected: "+client.sessionId);
-    setTimeout(function() {
-        socket.broadcast({ player_disconnected: client.sessionId });
-        delete players[client.sessionId];
-    }, 1500);
+    socket.broadcast({ player_disconnected: client.sessionId });
+    delete players[client.sessionId];
   });
 });
 
