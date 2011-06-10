@@ -8,7 +8,7 @@
     #scoreboard { position:relative; width: 200px; height: 100px; border: solid 1px #AAAAAA; background-color: #DDDDDD; }
     .green_ponger { background-image: url('/images/greenpaddle.png'); }
     .red_ponger { background-image: url('/images/redpaddle.png'); }
-    .ball { background-color: #777777; }
+    .ball { background-color: #CCCCCC; }
 </style>
 
 
@@ -46,36 +46,32 @@ function $(id) {
 var sprites = {};
 window.addEventListener('load', function()
 {
-    var keystroke_matches = {37:true,38:true,39:true,40:true};
 
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
-        if (e.keyCode in keystroke_matches) {
-            e.preventDefault();
-            players[my_id].keystrokes[e.keyCode] = true;
-            socket.send({
-                'my_id': my_id, 
-                'the_event': { 
-                    x: players[my_id].x,
-                    y: players[my_id].y,
-                    keystrokes: players[my_id].keystrokes
-                }
-            });
-        }
+        e.preventDefault();
+        players[my_id].keystrokes[e.keyCode] = true;
+        socket.send({
+            'my_id': my_id, 
+            'the_event': { 
+                x: players[my_id].x,
+                y: players[my_id].y,
+                keystrokes: players[my_id].keystrokes
+            }
+        });
+
     }, false);
     document.addEventListener('keyup', function(e) {
-        if (e.keyCode in keystroke_matches) {
-            e.preventDefault();
-            players[my_id].keystrokes[e.keyCode] = false;
-            socket.send({
-                'my_id': my_id, 
-                'the_event': { 
-                    x: players[my_id].x,
-                    y: players[my_id].y,
-                    keystrokes: players[my_id].keystrokes
-                }
-            });
-        }
+        e.preventDefault();
+        players[my_id].keystrokes[e.keyCode] = false;
+        socket.send({
+            'my_id': my_id, 
+            'the_event': { 
+                x: players[my_id].x,
+                y: players[my_id].y,
+                keystrokes: players[my_id].keystrokes
+            }
+        });
     }, false);
     document.addEventListener('keypress', function(e) {
         e.preventDefault();
@@ -124,7 +120,7 @@ window.addEventListener('load', function()
     var ball = {};
     var ballSprite;
     
-    var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
+    var socket = new io.Socket(null, {port: 80, rememberTransport: false});
 
     socket.connect();
 
@@ -193,7 +189,7 @@ window.addEventListener('load', function()
 
 
     // Animation Loop!!!
-    var ponger_step = 7;
+    var ponger_step = 10;
     var half_window = 500;
     setInterval(function() {
         // start animating the ball, pending collision check
@@ -219,10 +215,10 @@ window.addEventListener('load', function()
             // check for collision with ball
             if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
                 var diff = ball.x - players[i].x;
-                if (players[i].x < 500 && diff > 0 && diff < 10) {
+                if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
                     ball.angle = Math.PI - ball.angle;
                     ball.x = players[i].x + diff;
-                } else if (players[i].x > 500  && diff > -10 && diff < 10) {
+                } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
                     ball.angle = Math.PI - ball.angle;
                     ball.x = players[i].x - diff;
                 }
@@ -261,7 +257,7 @@ window.addEventListener('load', function()
             players[my_id].updated = false;
         }
 */
-    }, 20);
+    }, 30);
 /*    setInterval(function() {
         for (i in players) {
             sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';

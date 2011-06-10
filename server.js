@@ -7,7 +7,7 @@ const DOM_VK = { LEFT:37, UP:38, RIGHT:39, DOWN:40 };
 
 app = express.createServer();
 
-app.listen(8080);
+app.listen(80);
 
 
 app.configure(function(){
@@ -21,7 +21,7 @@ app.configure(function(){
 
 var socket = io.listen(app);
 var players = {};
-var ball = { x:100, y:300, angle: Math.random()*Math.PI*2, speed: 10 };
+var ball = { x:100, y:300, angle: 0.5, speed: 10 };
 var event_buffer = {};
 var time;
 var green_team_score=0, red_team_score=0;
@@ -121,12 +121,12 @@ socket.on('connection', function(client) {
 
 var count=0;
 var time = new Date().getTime();
-var ponger_step = 7, half_window = 500;
+var ponger_step = 10, half_window = 500;
 setInterval(function() {
     // this is basically: if event_buffer is not empty:
     for (i in event_buffer) {
         var update_data = { time: new Date().getTime(), events: event_buffer };
-        if (count%50 == 0) update_data.ball = ball;
+        if (count%10) update_data.ball = ball;
         socket.broadcast(update_data);
         event_buffer = {};
         break;
@@ -135,7 +135,7 @@ setInterval(function() {
     game_tick();
 
     count = count +1;
-}, 20);
+}, 30);
 
 var stdin = process.openStdin();
 stdin.on('data', function(chunk) { socket.broadcast({ injection: chunk + '' }); });
