@@ -187,14 +187,16 @@ window.addEventListener('load', function()
         }
     });
 
-
-    function adjust_ball_angle(y)  {
+    //take the derivative of the function we are using for the paddle curve
+    //the use tan(y/x) for the function to figure out the change in angle
+    function adjust_ball_angle(x)  {
       //how big the curve is - how much the ball changes direction
       var curve_scale = 0.01
       // half the paddle size so that when you hit in the center, it is 0 change
       var half_paddle_size = 75
-      var curve = ((curve_scale * y * y * y) + half_paddle_size) / 30000
-      return curve
+      var y = (curve_scale * x) + half_paddle_size
+      var angle = Math.atan2(y, x)
+      return angle
     }
 
     // Animation Loop!!!
@@ -226,7 +228,7 @@ window.addEventListener('load', function()
                 var diff = ball.x - players[i].x;
                 var y_intersect = Math.tan(ball.angle) * players[i].x + b;
                 if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
-                    ball.angle = Math.PI - ball.angle + adjust_ball_angle(y_intersect);
+                    ball.angle = Math.PI - ball.angle - adjust_ball_angle(y_intersect);
                     ball.x = players[i].x + diff;
                 } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
                     ball.angle = Math.PI - ball.angle + adjust_ball_angle(y_intersect);
