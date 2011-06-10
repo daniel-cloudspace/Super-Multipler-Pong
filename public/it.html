@@ -188,6 +188,15 @@ window.addEventListener('load', function()
     });
 
 
+    function adjust_ball_angle(y)  {
+      //how big the curve is - how much the ball changes direction
+      var curve_scale = 10
+      // half the paddle size so that when you hit in the center, it is 0 change
+      var half_paddle_size = 75
+      var curve = (10 * y * y) + 75
+      return curve
+    }
+
     // Animation Loop!!!
     var ponger_step = 10;
     var half_window = 500;
@@ -215,11 +224,12 @@ window.addEventListener('load', function()
             // check for collision with ball
             if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
                 var diff = ball.x - players[i].x;
+                var y_intersect = Math.tan(ball.angle) * players[i].x + b;
                 if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
-                    ball.angle = Math.PI - ball.angle;
+                    ball.angle = Math.PI - ball.angle - adjust_ball_angle(y_intersect);
                     ball.x = players[i].x + diff;
                 } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
-                    ball.angle = Math.PI - ball.angle;
+                    ball.angle = Math.PI - ball.angle - adjust_ball_angle(y_intersect);
                     ball.x = players[i].x - diff;
                 }
             }
