@@ -33,6 +33,15 @@ function new_player() {
     return { x: starter_x, y: 0, updated: false, keystrokes: keystrokes}
 }
 
+function adjust_ball_angle(y)  {
+  //how big the curve is - how much the ball changes direction
+  var curve_scale = 0.01
+  // half the paddle size so that when you hit in the center, it is 0 change
+  var half_paddle_size = 75
+  var curve = ((curve_scale * y * y) + half_paddle_size) / 30000
+  return curve
+}
+
 function game_tick() {
     ball.x += ball.speed * Math.cos(ball.angle);
     ball.y += ball.speed * Math.sin(ball.angle);
@@ -50,11 +59,12 @@ function game_tick() {
         // check for collision with ball
         if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
             var diff = ball.x - players[i].x;
+            var y_intersect = Math.tan(ball.angle) * players[i].x + b;
             if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
-                ball.angle = Math.PI - ball.angle;
+                ball.angle = Math.PI - ball.angle + adjust_ball_angle(y_intersect);
                 ball.x = players[i].x + diff;
             } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
-                ball.angle = Math.PI - ball.angle;
+                ball.angle = Math.PI - ball.angle + adjust_ball_angle(y_intersect);
                 ball.x = players[i].x - diff;
             }
         }
