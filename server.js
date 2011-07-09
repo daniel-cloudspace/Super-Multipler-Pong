@@ -1,13 +1,13 @@
 var express = require('express');
 var sys = require("sys");
 var util = require('util');
-var io = require("socket.io");
+var socketio = require("socket.io");
 
 const DOM_VK = { LEFT:37, UP:38, RIGHT:39, DOWN:40 };
 
 app = express.createServer();
 
-app.listen(80);
+app.listen(8080);
 
 
 app.configure(function(){
@@ -19,7 +19,7 @@ app.configure(function(){
 });
 
 
-var socket = io.listen(app);
+var io = socketio.listen(app);
 var players = {};
 var ball = { x:100, y:300, angle: 0.5, speed: 10 };
 var event_buffer = {};
@@ -32,7 +32,6 @@ function new_player() {
     keystrokes[DOM_VK.UP] = keystrokes[DOM_VK.DOWN] = keystrokes[DOM_VK.RIGHT] = keystrokes[DOM_VK.LEFT] = false;
     return { x: starter_x, y: 0, updated: false, keystrokes: keystrokes}
 }
-
 //take the derivative of the function we are using for the paddle curve
 //the use tan(y/x) for the function to figure out the change in angle
 function adjust_ball_angle(x)  {
@@ -85,50 +84,48 @@ function game_tick() {
         ball.x = Math.abs(ball.x);
         // Green team scores
         green_team_score += 1;
-        socket.broadcast({ score: { green: green_team_score, red: red_team_score }});
+        io.sockets.send({ score: { green: green_team_score, red: red_team_score }});
     } else if (ball.x > 1000) {
         ball.angle = Math.PI - ball.angle;
         ball.x = 2000 - ball.x;
         // Red team scores
         red_team_score += 1;
-        socket.broadcast({ score: { green: green_team_score, red: red_team_score }});
+        io.sockets.send({ score: { green: green_team_score, red: red_team_score }});
     }
 }
 
-socket.on('connection', function(client) {
+io.sockets.on('connection', function(socket) {
 
-  players[client.sessionId] = new_player(); 
+  players[socket.id] = new_player(); 
 
-  client.send({ 
-    init_data: { 
-        your_id: client.sessionId, 
-        your_player: players[client.sessionId], 
-        ball: ball, 
-        server_time: new Date().getTime(), 
-        players: players, 
-        score: { 
-            green: green_team_score, 
-            red: red_team_score 
-        } 
-    } 
+  socket.emit('init_data', {
+      your_id: socket.id, 
+      your_player: players[socket.id], 
+      ball: ball, 
+      server_time: new Date().getTime(), 
+      players: players, 
+      score: { 
+          green: green_team_score, 
+          red: red_team_score 
+      } 
   });
 
-  client.on('message', function(message){
+  socket.on('keystroke', function(message){
      if ( typeof players[message.my_id] != 'undefined' ) {
         event_buffer[message.my_id] = message.the_event;
-        players[message.my_id].x = message.the_event.x;
-        players[message.my_id].y = message.the_event.y;
-        players[message.my_id].keystrokes[DOM_VK.UP] = message.the_event.keystrokes[DOM_VK.UP];
-        players[message.my_id].keystrokes[DOM_VK.DOWN] = message.the_event.keystrokes[DOM_VK.DOWN];
-        players[message.my_id].keystrokes[DOM_VK.LEFT] = message.the_event.keystrokes[DOM_VK.LEFT];
-        players[message.my_id].keystrokes[DOM_VK.RIGHT] = message.the_event.keystrokes[DOM_VK.RIGHT];
+        players[message.my_id].x = message.x;
+        players[message.my_id].y = message.y;
+        players[message.my_id].keystrokes[DOM_VK.UP] = message.keystrokes[DOM_VK.UP];
+        players[message.my_id].keystrokes[DOM_VK.DOWN] = message.keystrokes[DOM_VK.DOWN];
+        players[message.my_id].keystrokes[DOM_VK.LEFT] = message.keystrokes[DOM_VK.LEFT];
+        players[message.my_id].keystrokes[DOM_VK.RIGHT] = message.keystrokes[DOM_VK.RIGHT];
     }
   });
 
-  client.on('disconnect', function(){ 
-    sys.puts("client disconnected: "+client.sessionId);
-    socket.broadcast({ player_disconnected: client.sessionId });
-    delete players[client.sessionId];
+  socket.on('disconnect', function(){ 
+    sys.puts("client disconnected: "+socket.id);
+    socket.broadcast.send({ player_disconnected: socket.id });
+    delete players[socket.id];
   });
 });
 
@@ -140,7 +137,7 @@ setInterval(function() {
     for (i in event_buffer) {
         var update_data = { time: new Date().getTime(), events: event_buffer };
         if (count%10) update_data.ball = ball;
-        socket.broadcast(update_data);
+        io.sockets.send(update_data);
         event_buffer = {};
         break;
     }
@@ -151,4 +148,4 @@ setInterval(function() {
 }, 30);
 
 var stdin = process.openStdin();
-stdin.on('data', function(chunk) { socket.broadcast({ injection: chunk + '' }); });
+stdin.on('data', function(chunk) { io.sockets.send({ injection: chunk + '' }); });

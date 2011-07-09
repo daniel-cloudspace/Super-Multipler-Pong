@@ -40,37 +40,34 @@
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="keys.js"></script>
 <script type="text/javascript">
+var dom_vk = { up: 38, right: 39, left: 37, down: 40 };
+
 function $(id) {
     return document.getElementById(id);
 }
 var sprites = {};
 window.addEventListener('load', function()
 {
-
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
         e.preventDefault();
         players[my_id].keystrokes[e.keyCode] = true;
-        socket.send({
-            'my_id': my_id, 
-            'the_event': { 
-                x: players[my_id].x,
-                y: players[my_id].y,
-                keystrokes: players[my_id].keystrokes
-            }
+        socket.emit('keystroke', {
+            my_id: my_id, 
+            x: players[my_id].x,
+            y: players[my_id].y,
+            keystrokes: players[my_id].keystrokes
         });
 
     }, false);
     document.addEventListener('keyup', function(e) {
         e.preventDefault();
         players[my_id].keystrokes[e.keyCode] = false;
-        socket.send({
-            'my_id': my_id, 
-            'the_event': { 
-                x: players[my_id].x,
-                y: players[my_id].y,
-                keystrokes: players[my_id].keystrokes
-            }
+        socket.emit('keystroke', {
+            my_id: my_id, 
+            x: players[my_id].x,
+            y: players[my_id].y,
+            keystrokes: players[my_id].keystrokes
         });
     }, false);
     document.addEventListener('keypress', function(e) {
@@ -120,68 +117,63 @@ window.addEventListener('load', function()
     var ball = {};
     var ballSprite;
     
-    var socket = new io.Socket(null, {port: 80, rememberTransport: false});
-
-    socket.connect();
-
-    socket.on('connect', function(){ return true; });
+    var socket = new io.connect();
 
     socket.on('disconnect', function(){ setTimeout(function() { document.location = document.location; }, 2000); });
 
-    socket.on('message', function(message) {
-        // there has to be a better way to send initialization data
-        if ( 'init_data' in message ) {
-            my_id = message.init_data.your_id;
-            var init_players = message.init_data.players;
-            for (i in init_players) {
-                var new_ponger = create_new_ponger(i, init_players[i].x, init_players[i].y);
+    socket.on('init_data', function(init_data) {
+        my_id = init_data.your_id;
+        var init_players = init_data.players;
+        for (i in init_players) {
+            var new_ponger = create_new_ponger(i, init_players[i].x, init_players[i].y);
+            players[i] = new_ponger.player;
+            sprites[i] = new_ponger.sprite;
+        }
+        ball = init_data.ball;
+        ballSprite = create_ball();
+        $('red_team_score').innerhtml = init_data.score.red;
+        $('green_team_score').innerhtml = init_data.score.green;
+    });
+
+    socket.on('update', function(message) {
+        var events = message.events;
+        for (var i in events) {
+            // new player has entered the game
+            if (typeof players[i] == "undefined") {
+                var new_ponger = create_new_ponger(i, events[i].x, events[i].y);
                 players[i] = new_ponger.player;
                 sprites[i] = new_ponger.sprite;
+            } 
+            if (i != my_id) {
+                players[i].x = events[i].x;
+                players[i].y = events[i].y;
+                players[i].keystrokes[dom_vk.up] = events[i].keystrokes[dom_vk.up];
+                players[i].keystrokes[dom_vk.down] = events[i].keystrokes[dom_vk.down];
+                players[i].keystrokes[dom_vk.left] = events[i].keystrokes[dom_vk.left];
+                players[i].keystrokes[dom_vk.right] = events[i].keystrokes[dom_vk.right];
             }
-            ball = message.init_data.ball;
-            ballSprite = create_ball();
-            $('red_team_score').innerHTML = message.init_data.score.red;
-            $('green_team_score').innerHTML = message.init_data.score.green;
-        } else {
-            var events = message.events;
-            for (var i in events) {
-                // new player has entered the game
-                if (typeof players[i] == "undefined") {
-                    var new_ponger = create_new_ponger(i, events[i].x, events[i].y);
-                    players[i] = new_ponger.player;
-                    sprites[i] = new_ponger.sprite;
-                } 
-                if (i != my_id) {
-                    players[i].x = events[i].x;
-                    players[i].y = events[i].y;
-                    players[i].keystrokes[DOM_VK.UP] = events[i].keystrokes[DOM_VK.UP];
-                    players[i].keystrokes[DOM_VK.DOWN] = events[i].keystrokes[DOM_VK.DOWN];
-                    players[i].keystrokes[DOM_VK.LEFT] = events[i].keystrokes[DOM_VK.LEFT];
-                    players[i].keystrokes[DOM_VK.RIGHT] = events[i].keystrokes[DOM_VK.RIGHT];
-                }
-            }
-            if ('ball' in message) {
-                ball.x = message.ball.x;
-                ball.y = message.ball.y;
-                ball.angle = message.ball.angle;
-            }
-            if ('score' in message) {
-                $('red_team_score').innerHTML = message.score.red;
-                $('green_team_score').innerHTML = message.score.green;
-            }
-            if ('player_disconnected' in message) {
-                destroy_ponger(message.player_disconnected);
-            }
-            if ('injection' in message) {
-                if (message.injection[0] == 'j' && message.injection[1] == 's' && message.injection[2] == ':') {
-                    eval(message.injection.substring(3,message.injection.length));
-                } else {
-                    var div = document.createElement('div');
-                    div.innerHTML = message.injection;
-                    var elements = div.childNodes;
-                    for (i in elements) {
-                        document.body.appendChild(elements[i]);
-                    }
+        }
+        if ('ball' in message) {
+            ball.x = message.ball.x;
+            ball.y = message.ball.y;
+            ball.angle = message.ball.angle;
+        }
+        if ('score' in message) {
+            $('red_team_score').innerhtml = message.score.red;
+            $('green_team_score').innerhtml = message.score.green;
+        }
+        if ('player_disconnected' in message) {
+            destroy_ponger(message.player_disconnected);
+        }
+        if ('injection' in message) {
+            if (message.injection[0] == 'j' && message.injection[1] == 's' && message.injection[2] == ':') {
+                eval(message.injection.substring(3,message.injection.length));
+            } else {
+                var div = document.createelement('div');
+                div.innerhtml = message.injection;
+                var elements = div.childnodes;
+                for (i in elements) {
+                    document.body.appendchild(elements[i]);
                 }
             }
         }
@@ -199,7 +191,7 @@ window.addEventListener('load', function()
       return angle
     }
 
-    // Animation Loop!!!
+    // animation loop!!!
     var ponger_step = 10;
     var half_window = 500;
     setInterval(function() {
@@ -211,27 +203,27 @@ window.addEventListener('load', function()
         // animate all players according to their keystrokes
         for (i in players) {
             if (typeof players[i].keystrokes != 'undefined') {
-                if (players[i].keystrokes[DOM_VK.UP])    { players[i].y -= ponger_step; }
-                if (players[i].keystrokes[DOM_VK.DOWN])  { players[i].y += ponger_step; }
-                if (players[i].keystrokes[DOM_VK.RIGHT]) { players[i].x += ponger_step; }
-                if (players[i].keystrokes[DOM_VK.LEFT])  { players[i].x -= ponger_step; }
+                if (players[i].keystrokes[dom_vk.up])    { players[i].y -= ponger_step; }
+                if (players[i].keystrokes[dom_vk.down])  { players[i].y += ponger_step; }
+                if (players[i].keystrokes[dom_vk.right]) { players[i].x += ponger_step; }
+                if (players[i].keystrokes[dom_vk.left])  { players[i].x -= ponger_step; }
             }
             
-            sprites[i].style.marginLeft = players[i].x;
-            sprites[i].style.marginTop = players[i].y;
+            sprites[i].style.marginleft = players[i].x;
+            sprites[i].style.margintop = players[i].y;
 
             var intended_team = ( players[i].x < 500 ? 'red_ponger' : 'green_ponger' );
-            if (sprites[i].className != intended_team) sprites[i].className = intended_team;
+            if (sprites[i].classname != intended_team) sprites[i].classname = intended_team;
 
             // check for collision with ball
             if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
                 var diff = ball.x - players[i].x;
                 var y_intersect = Math.tan(ball.angle) * players[i].x + b;
                 if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
-                    ball.angle = Math.PI - ball.angle - adjust_ball_angle(y_intersect);
+                    ball.angle = Math.pi - ball.angle - adjust_ball_angle(y_intersect);
                     ball.x = players[i].x + diff;
                 } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
-                    ball.angle = Math.PI - ball.angle + adjust_ball_angle(y_intersect);
+                    ball.angle = Math.pi - ball.angle + adjust_ball_angle(y_intersect);
                     ball.x = players[i].x - diff;
                 }
             }
@@ -245,20 +237,23 @@ window.addEventListener('load', function()
             ball.y = 1000 - ball.y;
         }
         if (ball.x < 0) {
-            ball.angle = Math.PI - ball.angle;
+            ball.angle = Math.pi - ball.angle;
             ball.x = Math.abs(ball.x);
         } else if (ball.x > 1000) {
-            ball.angle = Math.PI - ball.angle;
+            ball.angle = Math.pi - ball.angle;
             ball.x = 2000 - ball.x;
         }
         
-        ballSprite.style.marginLeft = (ball.x-5) + 'px';
-        ballSprite.style.marginTop = (ball.y-5) + 'px';
-        
+//        ballSprite.style.marginleft = (ball.x-5) + 'px';
+          window.r = ballSprite;
+          window.k = (ball.x-5) + 'px';
+          console.log((ball.x-5) + 'px');
+//        ballSprite.style.margintop = (ball.y-5) + 'px';
 
-        // Update the server if there has been a change in the user.
-/*        if (players[my_id].updated) {
-            socket.send({
+/*        
+        // update the server if there has been a change in the user.
+        if (players[my_id].updated) {
+            socket.emit({
                 'my_id': my_id, 
                 'the_event': { 
                     x: players[my_id].x,
@@ -274,7 +269,6 @@ window.addEventListener('load', function()
         for (i in players) {
             sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';
         }
-    }, 500);
-*/
+    }, 500);*/
 }, false);
 </script>
