@@ -45,6 +45,9 @@ var dom_vk = { up: 38, right: 39, left: 37, down: 40 };
 function $(id) {
     return document.getElementById(id);
 }
+function debug(d) {
+    if (typeof console != 'undefined' && typeof console.log == 'function') console.log(d);
+}
 var sprites = {};
 window.addEventListener('load', function()
 {
@@ -131,8 +134,8 @@ window.addEventListener('load', function()
         }
         ball = init_data.ball;
         ballSprite = create_ball();
-        $('red_team_score').innerhtml = init_data.score.red;
-        $('green_team_score').innerhtml = init_data.score.green;
+        $('red_team_score').innerHTML = init_data.score.red;
+        $('green_team_score').innerHTML = init_data.score.green;
     });
 
     socket.on('update', function(message) {
@@ -158,23 +161,26 @@ window.addEventListener('load', function()
             ball.y = message.ball.y;
             ball.angle = message.ball.angle;
         }
-        if ('score' in message) {
-            $('red_team_score').innerhtml = message.score.red;
-            $('green_team_score').innerhtml = message.score.green;
-        }
-        if ('player_disconnected' in message) {
-            destroy_ponger(message.player_disconnected);
-        }
-        if ('injection' in message) {
-            if (message.injection[0] == 'j' && message.injection[1] == 's' && message.injection[2] == ':') {
-                eval(message.injection.substring(3,message.injection.length));
-            } else {
-                var div = document.createelement('div');
-                div.innerhtml = message.injection;
-                var elements = div.childnodes;
-                for (i in elements) {
-                    document.body.appendchild(elements[i]);
-                }
+    });
+
+    socket.on('score', function(message) {
+        $('red_team_score').innerHTML = message.red;
+        $('green_team_score').innerHTML = message.green;
+    });
+
+    socket.on('player_disconnected', function(message) {
+        destroy_ponger(message.player_disconnected);
+    });
+
+    socket.on('injection', function(message) {
+        if (message.injection.substring(0,3) == "js:") {
+            eval(message.injection.substring(3,message.injection.length));
+        } else {
+            var div = document.createelement('div');
+            div.innerHTML = message.injection;
+            var elements = div.childnodes;
+            for (i in elements) {
+                document.body.appendchild(elements[i]);
             }
         }
     });
@@ -209,21 +215,21 @@ window.addEventListener('load', function()
                 if (players[i].keystrokes[dom_vk.left])  { players[i].x -= ponger_step; }
             }
             
-            sprites[i].style.marginleft = players[i].x;
-            sprites[i].style.margintop = players[i].y;
+            sprites[i].style.marginLeft = players[i].x;
+            sprites[i].style.marginTop = players[i].y;
 
             var intended_team = ( players[i].x < 500 ? 'red_ponger' : 'green_ponger' );
-            if (sprites[i].classname != intended_team) sprites[i].classname = intended_team;
+            if (sprites[i].className != intended_team) sprites[i].className = intended_team;
 
             // check for collision with ball
             if (ball.y < players[i].y + 120 && ball.y > players[i].y) {
                 var diff = ball.x - players[i].x;
                 var y_intersect = Math.tan(ball.angle) * players[i].x + b;
                 if (players[i].x < 500 && Math.cos(ball.angle) < 0 && diff > 0 && diff < 10) {
-                    ball.angle = Math.pi - ball.angle - adjust_ball_angle(y_intersect);
+                    ball.angle = Math.PI - ball.angle - adjust_ball_angle(y_intersect);
                     ball.x = players[i].x + diff;
                 } else if (players[i].x > 500 && Math.cos(ball.angle) > 0 && diff > -10 && diff < 0) {
-                    ball.angle = Math.pi - ball.angle + adjust_ball_angle(y_intersect);
+                    ball.angle = Math.PI - ball.angle + adjust_ball_angle(y_intersect);
                     ball.x = players[i].x - diff;
                 }
             }
@@ -237,38 +243,15 @@ window.addEventListener('load', function()
             ball.y = 1000 - ball.y;
         }
         if (ball.x < 0) {
-            ball.angle = Math.pi - ball.angle;
+            ball.angle = Math.PI - ball.angle;
             ball.x = Math.abs(ball.x);
         } else if (ball.x > 1000) {
-            ball.angle = Math.pi - ball.angle;
+            ball.angle = Math.PI - ball.angle;
             ball.x = 2000 - ball.x;
         }
         
-//        ballSprite.style.marginleft = (ball.x-5) + 'px';
-          window.r = ballSprite;
-          window.k = (ball.x-5) + 'px';
-          console.log((ball.x-5) + 'px');
-//        ballSprite.style.margintop = (ball.y-5) + 'px';
-
-/*        
-        // update the server if there has been a change in the user.
-        if (players[my_id].updated) {
-            socket.emit({
-                'my_id': my_id, 
-                'the_event': { 
-                    x: players[my_id].x,
-                    y: players[my_id].y,
-                    keystrokes: players[my_id].keystrokes
-                }
-            });
-            players[my_id].updated = false;
-        }
-*/
+          ballSprite.style.marginLeft = (ball.x-5) + 'px';
+          ballSprite.style.marginTop = (ball.y-5) + 'px';
     }, 30);
-/*    setInterval(function() {
-        for (i in players) {
-            sprites[i].style.backgroundColor = (players[i].x > half_window_width) ? '#DD3333' : '#33DD33';
-        }
-    }, 500);*/
 }, false);
 </script>

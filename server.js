@@ -7,7 +7,7 @@ const DOM_VK = { LEFT:37, UP:38, RIGHT:39, DOWN:40 };
 
 app = express.createServer();
 
-app.listen(8080);
+app.listen(8081);
 
 
 app.configure(function(){
@@ -84,13 +84,13 @@ function game_tick() {
         ball.x = Math.abs(ball.x);
         // Green team scores
         green_team_score += 1;
-        io.sockets.send({ score: { green: green_team_score, red: red_team_score }});
+        io.sockets.emit('score', { green: green_team_score, red: red_team_score });
     } else if (ball.x > 1000) {
         ball.angle = Math.PI - ball.angle;
         ball.x = 2000 - ball.x;
         // Red team scores
         red_team_score += 1;
-        io.sockets.send({ score: { green: green_team_score, red: red_team_score }});
+        io.sockets.emit('score', { green: green_team_score, red: red_team_score });
     }
 }
 
@@ -112,7 +112,7 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('keystroke', function(message){
      if ( typeof players[message.my_id] != 'undefined' ) {
-        event_buffer[message.my_id] = message.the_event;
+        event_buffer[message.my_id] = message;
         players[message.my_id].x = message.x;
         players[message.my_id].y = message.y;
         players[message.my_id].keystrokes[DOM_VK.UP] = message.keystrokes[DOM_VK.UP];
@@ -124,7 +124,7 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('disconnect', function(){ 
     sys.puts("client disconnected: "+socket.id);
-    socket.broadcast.send({ player_disconnected: socket.id });
+    io.sockets.emit('player_disconnected', { id: socket.id });
     delete players[socket.id];
   });
 });
@@ -137,7 +137,7 @@ setInterval(function() {
     for (i in event_buffer) {
         var update_data = { time: new Date().getTime(), events: event_buffer };
         if (count%10) update_data.ball = ball;
-        io.sockets.send(update_data);
+        io.sockets.emit('update', update_data);
         event_buffer = {};
         break;
     }
@@ -148,4 +148,4 @@ setInterval(function() {
 }, 30);
 
 var stdin = process.openStdin();
-stdin.on('data', function(chunk) { io.sockets.send({ injection: chunk + '' }); });
+stdin.on('data', function(chunk) { io.sockets.emit('injection', { injection: chunk + '' }); });
