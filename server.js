@@ -136,7 +136,7 @@ setInterval(function() {
     // this is basically: if event_buffer is not empty:
     for (i in event_buffer) {
         var update_data = { time: new Date().getTime(), events: event_buffer };
-        if (count%100) update_data.ball = ball;
+        if (count%10) update_data.ball = ball;
         io.sockets.emit('update', update_data);
         event_buffer = {};
         break;
@@ -145,7 +145,7 @@ setInterval(function() {
     game_tick();
 
     count = count +1;
-}, 10);
+}, 30);
 
 var stdin = process.openStdin();
 stdin.on('data', function(chunk) { io.sockets.emit('injection', { injection: chunk + '' }); });
