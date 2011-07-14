@@ -27,7 +27,8 @@ body {}
   left: 20px;
   width: 768px;
   height: 512px;
-  z-index: 100;
+  z-index: -5;
+  overflow: hidden;
   background-image: url("images/gamefloor.png");}
 
 #scoreboard {
