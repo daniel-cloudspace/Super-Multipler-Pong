@@ -1,0 +1,42 @@
+body {
+  background: #888888;
+}
+
+#supcontainer {}
+
+#board {
+  width:808px;
+  height: 552px;
+  margin: 20px auto 0 auto;
+  z-index:20;
+}
+
+#frame {
+  position: relative;
+  width: 808px;
+  height: 552px;
+  z-index: 5;
+  background-image: url("images/gameframe.png");}
+ 
+#map {
+  position: relative;
+  top: -532px;
+  left: 20px;
+  width: 768px;
+  height: 512px;
+  z-index: -5;
+  background-image: url("images/gamefloor.png");}
+
+#scoreboard {
+  width: 200px;
+  height: 100px;
+  background-color: #DDDDDD; }
+
+.scorebox {
+  background: black;
+}
+.green_ponger { background-image: url('/images/greenpaddle.png'); }
+
+.red_ponger { background-image: url('/images/redpaddle.png'); }
+
+.ball { background-color: #CCCCCC; }

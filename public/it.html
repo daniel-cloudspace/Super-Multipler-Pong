@@ -1,38 +1,30 @@
-<title>Super Multipler Pong!!1!</title>
-
-<style type="text/css">
-    #supercontainer { margin-left: auto; width:100%}
-    #map { width:1000px; border: 5px solid black; height: 500px; }
-    #map #left_field { float:left; width:49%; height: 100%; }
-    #map #right_field { float:right; width:49%; height: 100%; border-left: 3px dotted gray; }
-    #scoreboard { position:relative; width: 200px; height: 100px; border: solid 1px #AAAAAA; background-color: #DDDDDD; }
-    .green_ponger { background-image: url('/images/greenpaddle.png'); }
-    .red_ponger { background-image: url('/images/redpaddle.png'); }
-    .ball { background-color: #CCCCCC; }
-</style>
-
+<head>
+	<title>Super Multipler Pong!!1!</title>
+    <link rel="stylesheet" type="text/css" href="screen.css" />
+</head>
 
 
 <body>
     <div id='supcontainer'>
-    <div id="map">
-        <div id="left_field">
-        </div>
-        <div id="right_field">
-        </div>
-    </div>
-    <div id="scoreboard">
-        <table>
-            <tr>
-                <th>Red Team</th>
-                <th>Green Team</th>
-            </tr>
-            <tr>
-                <td id="red_team_score">0</td>
-                <td id="green_team_score">0</td>
-            </tr>
-        </table>
-    </div>
+	  <div id='board'>
+		<div id="frame">
+		</div>
+		<div id="map">
+		</div>
+	  </div>
+	   
+	  <div id="scoreboard">
+	    table>
+		  <tr>
+		    <th>Red Team</th>
+		    <th>Green Team</th>
+		  </tr>
+		  <tr>
+		    <td id="red_team_score">0</td>
+		    <td id="green_team_score">0</td>
+		  </tr>
+		</table>
+	  </div>
     </div>
 </body>
 
@@ -53,7 +45,7 @@ window.addEventListener('load', function()
 {
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
-        e.preventDefault();
+        //e.preventDefault();
         players[my_id].keystrokes[e.keyCode] = true;
         socket.emit('keystroke', {
             my_id: my_id, 
@@ -64,7 +56,7 @@ window.addEventListener('load', function()
 
     }, false);
     document.addEventListener('keyup', function(e) {
-        e.preventDefault();
+        //e.preventDefault();
         players[my_id].keystrokes[e.keyCode] = false;
         socket.emit('keystroke', {
             my_id: my_id, 
@@ -74,7 +66,7 @@ window.addEventListener('load', function()
         });
     }, false);
     document.addEventListener('keypress', function(e) {
-        e.preventDefault();
+        ///e.preventDefault();
     }, false);
 
 
