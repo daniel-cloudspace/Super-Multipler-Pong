@@ -45,7 +45,7 @@ window.addEventListener('load', function()
 {
     // Key stroke bindings
     document.addEventListener('keydown', function(e) {
-        //e.preventDefault();
+        e.preventDefault();
         players[my_id].keystrokes[e.keyCode] = true;
         socket.emit('keystroke', {
             my_id: my_id, 
@@ -56,7 +56,7 @@ window.addEventListener('load', function()
 
     }, false);
     document.addEventListener('keyup', function(e) {
-        //e.preventDefault();
+        e.preventDefault();
         players[my_id].keystrokes[e.keyCode] = false;
         socket.emit('keystroke', {
             my_id: my_id, 
@@ -66,7 +66,7 @@ window.addEventListener('load', function()
         });
     }, false);
     document.addEventListener('keypress', function(e) {
-        ///e.preventDefault();
+        e.preventDefault();
     }, false);
 
 
