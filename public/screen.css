@@ -1,6 +1,9 @@
-body {
-  background: #888888;
+html {
+  background: #FFF;
+  background-image: url(images/bg-tile-1.png),url(images/bg-tile-2.png),url(images/bg-tile.png);
 }
+
+body {}
 
 #supcontainer {}
 
@@ -15,7 +18,7 @@ body {
   position: relative;
   width: 808px;
   height: 552px;
-  z-index: 5;
+  z-index: 200;
   background-image: url("images/gameframe.png");}
  
 #map {
