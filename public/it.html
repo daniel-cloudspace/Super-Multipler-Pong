@@ -242,8 +242,11 @@ window.addEventListener('load', function()
             ball.x = 2000 - ball.x;
         }
         
+        // do NOT keep this in!! This whole gametick behavior should be instantiated after init data is received, after the ballSprite object is created.
+        if ( typeof ballSprite != 'undefined' ) {
           ballSprite.style.marginLeft = (ball.x-5) + 'px';
           ballSprite.style.marginTop = (ball.y-5) + 'px';
+        }
     }, 30);
 }, false);
 </script>
